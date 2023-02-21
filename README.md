@@ -1,3 +1,3 @@
 # kitchen-sink
 
-and everything else
+bits of code i've stolen
