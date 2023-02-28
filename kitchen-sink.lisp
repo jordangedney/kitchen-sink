@@ -24,3 +24,8 @@
             (tuple (cons (car xs) ys) zs)))))
 
 (defun to (type var) (coerce var type))
+
+(defmacro macro-apply (macro-name args) `(,macro-name ,@args))
+
+(defmacro macro-map (macro-name args)
+  `(progn ,@(loop for a in args collecting `(macro-apply ,macro-name ,a))))
