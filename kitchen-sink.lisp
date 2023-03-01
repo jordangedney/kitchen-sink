@@ -29,3 +29,15 @@
 
 (defmacro macro-map (macro-name args)
   `(progn ,@(loop for a in args collecting `(macro-apply ,macro-name ,a))))
+
+(defmacro with-gensyms ((&rest names) &body body)
+  `(let ,(loop for n in names collect `(,n (gensym)))
+     ,@body))
+
+(defmacro --open (filename &body body)
+  (with-gensyms (result)
+    `(let ((in (open ,filename)))
+       (when in
+         (let ((,result ,@body))
+           (close in)
+           ,result)))))
