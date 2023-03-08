@@ -34,10 +34,18 @@
   `(let ,(loop for n in names collect `(,n (gensym)))
      ,@body))
 
-(defmacro --open (filename &body body)
+(defmacro --open-with-args (open-args filename &body body)
   (with-gensyms (result)
-    `(let ((in (open ,filename)))
+    `(let ((in (open ,filename ,@open-args)))
        (when in
          (let ((,result ,@body))
            (close in)
            ,result)))))
+
+(defmacro --open (filename &body body)
+  `(--open-with-args nil ,filename ,@body))
+
+(defmacro --open-as-bytes (filename &body body)
+  `(--open-with-args (:element-type '(unsigned-byte 8)) ,filename ,@body))
+
+(defun -print (x) (format t "~a~%" x))
