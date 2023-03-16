@@ -7,6 +7,24 @@
 
 (defun is-space (c) (member c *whitespaces*))
 
+;; Haskellisms
+(defun take (count list)
+  (when (< count 0) (return-from take nil))
+  (if (<= count (length list))
+      (subseq list 0 count)
+      list))
+
+(defun drop (count list)
+  (when (< count 0) (return-from drop list))
+  (nthcdr count list))
+
+(defun chunks-of (i ls)
+  (if (> i (length ls)) (cons ls nil)
+      (loop while ls
+            collect (loop repeat i
+                          while ls
+                          collect (pop ls)))))
+
 ;; recursive
 (defun drop-while (p xs)
   (if (null xs) nil
@@ -22,7 +40,7 @@
       (if (funcall p (car xs)) (tuple nil xs)
           (destructuring-bind (ys zs) (break- p (cdr xs))
             (tuple (cons (car xs) ys) zs)))))
-
+k
 (defun to (type var) (coerce var type))
 
 (defmacro macro-apply (macro-name args) `(,macro-name ,@args))
