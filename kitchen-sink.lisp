@@ -67,3 +67,23 @@ k
   `(--open-with-args (:element-type '(unsigned-byte 8)) ,filename ,@body))
 
 (defun -print (x) (format t "~a~%" x))
+
+(defun ~ (x y &optional (step 1))
+  "a better range function
+  (~ 0 3)       => (0 1 2 3)
+  (~ 0 3 2)     => (0 2)
+  (~ 0 (~ 0 2)) => ((0 0) (0 1) (0 2))
+
+  (~ (~ 0 2) (~ 0 -2)))
+  => ((0 0) (0 -1) (0 -2) (1 0) (1 -1) (1 -2) (2 0) (2 -1) (2 -2))
+
+  (~ (~ 0 2) (~ 0 -2) 2)
+  => ((0 0) (0 -2) (2 0) (2 -2))"
+  (flet ((stepper (x) (nthcdr step x)))
+    (cond ((and (listp x) (listp y))
+             (loop for i in x by #'stepper appending
+               (loop for j in y by #'stepper collecting (list i j))))
+          ((listp x)  (loop for i in x by #'stepper collecting (list i y)))
+          ((listp y)  (loop for i in y by #'stepper collecting (list x i)))
+          ((<= x y)   (loop for i from x to y by step collecting i))
+          (:otherwise (loop for i from x downto y by step collecting i)))))
