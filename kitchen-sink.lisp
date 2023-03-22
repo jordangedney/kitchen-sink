@@ -40,7 +40,7 @@
       (if (funcall p (car xs)) (tuple nil xs)
           (destructuring-bind (ys zs) (break- p (cdr xs))
             (tuple (cons (car xs) ys) zs)))))
-k
+
 (defun to (type var) (coerce var type))
 
 (defmacro macro-apply (macro-name args) `(,macro-name ,@args))
