@@ -133,9 +133,9 @@
   ;; this is a passthrough macro to clean up the parameters for listcomp-explicit
   ;; the API is a bit inconsistent, but I went with my gut.
   `(listcomp-explicit
-     ,(if (atom to-collect) to-collect
-          (if (= (length to-collect) 1) (car to-collect)
-              (if (equalp (car to-collect) 'list) to-collect
-                  (cons 'list to-collect))))
+     ,(cond ((atom to-collect)                to-collect)
+            ((= (length to-collect) 1)        (car to-collect))
+            ((equalp (car to-collect) 'list)  to-collect)
+            (:otherwise                       (cons 'list to-collect)))
      ,(pair over)
      ,filters))
