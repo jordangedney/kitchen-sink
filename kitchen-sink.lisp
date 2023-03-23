@@ -127,7 +127,8 @@
 
     (listcomp (x y) (x (~ 0 2) y (~ 3 4))))
     => ((0 3) (0 4) (1 3) (1 4) (2 3) (2 4))
-    (listcomp (list x y z) (x (~ 0 2) y (~ 3 4) z (~ 1 2)) (eq z 2) (eq x 0))
+
+    (listcomp (x y z) (x (~ 0 2) y (~ 3 4) z (~ 1 2)) (eq z 2) (eq x 0))
     => ((0 3 2) (0 4 2))"
   ;; this is a passthrough macro to clean up the parameters for listcomp-explicit
   ;; the API is a bit inconsistent, but I went with my gut.
