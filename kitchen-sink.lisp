@@ -87,3 +87,54 @@
           ((listp y)  (loop for i in y by #'stepper collecting (list x i)))
           ((<= x y)   (loop for i from x to y by step collecting i))
           (:otherwise (loop for i from x downto y by step collecting i)))))
+
+(defmacro nested (fn-name args &body body)
+  "allows for nesting of functions, but doesn't collect the result.
+
+   (nested dolist ((x (~ 0 2)) (y (~ 3 4))) (print (list x y)))
+   => STD-OUT: (0 3) (0 4) (1 3) (1 4) (2 3) (2 4)
+
+   (nested dolist ((x (~ 0 2)) (y (~ 3 4))) (list x y)) => NIL"
+  (if (not (null args))
+      `(,fn-name ,(car args) (nested ,fn-name ,(cdr args) ,@body))
+      (car body)))
+
+(defmacro listcomp-explicit (collecting over filters)
+  "the internals for listcomp
+
+   (listcomp-explicit x ((x (~ 0 5))) ())                   => (0 1 2 3 4 5)
+   (listcomp-explicit x ((x (~ 0 5))) ((evenp x)))          => (0 2 4)
+   (listcomp-explicit x ((x (~ 0 5))) ((evenp x) (> x 2)))) => (4)
+
+   (listcomp-explicit (list x y) ((x (~ 0 2)) (y (~ 3 4))) ((evenp x)))
+   => ((0 3) (0 4) (2 3) (2 4))
+   (listcomp-explicit (list x y) ((x (~ 0 2)) (y (~ 3 4))) ((evenp x) (evenp y)))
+   => ((0 4) (2 4))"
+  (let ((result (gensym)))
+    `(let ((,result nil))
+       (nested dolist ,over (and ,@filters (push ,collecting ,result)))
+       (reverse ,result))))
+
+(defun pair (args) (loop for (k v) on args by #'cddr collecting (list k v)))
+
+(defmacro listcomp (to-collect over &rest filters)
+  " (listcomp x (x (~ 0 2)))                  => (0 1 2)
+    (listcomp (x) (x (~ 0 2)))                => (0 1 2)
+    (listcomp (list x) (x (~ 0 2)))           => ((0) (1) (2))
+
+    (listcomp (x y) (x '(0) y (~ 3 4))))      => ((0 3) (0 4))
+    (listcomp (list x y) (x '(0) y (~ 3 4)))) => ((0 3) (0 4))
+
+    (listcomp (x y) (x (~ 0 2) y (~ 3 4))))
+    => ((0 3) (0 4) (1 3) (1 4) (2 3) (2 4))
+    (listcomp (list x y z) (x (~ 0 2) y (~ 3 4) z (~ 1 2)) (eq z 2) (eq x 0))
+    => ((0 3 2) (0 4 2))"
+  ;; this is a passthrough macro to clean up the parameters for listcomp-explicit
+  ;; the API is a bit inconsistent, but I went with my gut.
+  `(listcomp-explicit
+     ,(if (atom to-collect) to-collect
+          (if (= (length to-collect) 1) (car to-collect)
+              (if (equalp (car to-collect) 'list) to-collect
+                  (cons 'list to-collect))))
+     ,(pair over)
+     ,filters))
