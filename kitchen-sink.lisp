@@ -139,3 +139,35 @@
             (:otherwise                       (cons 'list to-collect)))
      ,(pair over)
      ,filters))
+
+
+;; vector syntax reader --------------------------------------------------------
+;; CL-USER> [12, 23, 3] => #(12 23 3)
+;;
+;; (defconstant +left-bracket+ #\[)
+;; (defconstant +right-bracket+ #\])
+;; (defconstant +comma+ #\,)
+;;
+;; (defun read-next-object (separator delimiter &optional (in-stream *standard-input*))
+;;   (flet ((discard-next-char () (progn (read-char in-stream t nil t) nil))
+;;          (next-is (c) (char= (peek-char t in-stream t nil t) c)))
+;;     (if (next-is delimiter) (discard-next-char)
+;;         (let* ((object (read in-stream t nil t)))
+;;           (cond ((next-is separator) (discard-next-char))
+;;                 ((next-is delimiter) nil))
+;;           object))))
+;;
+;; (defun dont-read (stream char) (declare (ignore stream)) (error "read ~S alone") char)
+;;
+;; (defun read-left-bracket (stream char)
+;;   (declare (ignore char))
+;;   (let ((*readtable* (copy-readtable)))
+;;     (set-macro-character +comma+ 'dont-read)
+;;     (loop
+;;        for object = (read-next-object +comma+ +right-bracket+ stream)
+;;        while object
+;;        collect object into objects
+;;        finally (return `(vector ,@objects)))))
+;;
+;; (set-macro-character +right-bracket+ 'dont-read)
+;; (set-macro-character +left-bracket+ 'read-left-bracket)
