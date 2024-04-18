@@ -1,4 +1,4 @@
-;;;; kitchen-sink.lisp
+ ;;;; kitchen-sink.lisp
 
 (in-package #:kitchen-sink)
 
@@ -62,6 +62,35 @@
 
 
 (defun to (type var) (coerce var type))
+
+;; (zip #'+ '(1 2 3) '(1 1 1)) => (2 3 4)
+(defun zip (fn lst1 lst2)
+  (do ((x lst1 (cdr x))
+       (y lst2 (cdr y))
+       (z '() (cons (funcall fn (car x) (car y)) z)))
+      ((or (null x) (null y))
+       (nreverse z))))
+
+;; (for (x 10 1000) (print x))
+(defmacro for ((var start stop) &body body)
+  (let ((gstop (gensym)))
+    `(do ((,var ,start (1+ ,var))
+          (,gstop ,stop))
+         ((> ,var ,gstop))
+       ,@body)))
+
+
+;; (funcall (compose #'cdr #'cdr) '(a b c d)) => (c d)   -- cddr
+;; (funcall (compose #'car #'nthcdr) 2 '(a b c d)) => c  -- nth
+;; (funcall (compose #'not #'consp) :a) => T             -- atom
+;; (funcall (compose #'car #'nthcdr) 2 '(a b c d)) => c  -- nth
+(defun compose (&rest fns)
+  (destructuring-bind (fn1 . rest) (reverse fns)
+    #'(lambda (&rest args)
+        (reduce #'(lambda (v f) (funcall f v))
+                rest
+                :initial-value (apply fn1 args)))))
+
 
 (defmacro macro-apply (macro-name args) `(,macro-name ,@args))
 
@@ -191,3 +220,71 @@
 ;;
 ;; (set-macro-character +right-bracket+ 'dont-read)
 ;; (set-macro-character +left-bracket+ 'read-left-bracket)
+
+
+
+
+;; phue lights
+
+'((nightshift
+   ((turn on sunset, reading-light)
+    (fade to night-light :finished, slow))
+   :finished 11 pm)
+
+  (wakeup
+   ((fade in slow :start, bright-light)
+    (turn off :finished))
+   :start 9:30 am
+   :finished 11:30 am))
+
+'((bedroom
+   ((master-left master-right master-overhead)
+    ((monday tuesday wednesday thursday
+      ((wakeup)
+       (nightshift))))
+    (friday
+     ((wakeup)
+      (turn on sunset, reading-light)))
+    (saturday sunday
+     ((nightshift)))))
+
+  (living-room
+   ((coat-closet)
+    ((all
+      ((mirror master-left))))
+
+    (left spotlight right lamp winelights)
+    ((monday tuesday wednesday thursday sunday
+      ((wakeup)
+       (nightshift)))
+     (friday saturday
+      ((turn on sunset, reading-light))))))
+
+  (kitchen
+   ((overhead)
+    ((all
+      ((wakeup)
+       (turn on 5:30 pm)
+       (turn off 8:30 pm))))))
+
+  (office
+   ((lamp overhead records)
+    ((monday wednesday thursday friday
+      ((turn on 9:30 am, bright-light)
+       (flash 5:45 pm)
+       (turn off 6:15 pm)))
+     (tuesday
+      ((turn on 9:30 am, bright-light)
+       (flash 5 pm)
+       (turn off 5:30 pm))))))
+
+  (outside
+   ((garage-east garage-west landscape-lights)
+    ((all
+      ((turn on sunset)
+       (turn off master-left))))
+
+    (porch-north porch-south)
+    ((all
+      ((turn on sunset)
+       (turn off 8:30 pm)))))))
