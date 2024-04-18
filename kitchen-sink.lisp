@@ -41,6 +41,26 @@
           (destructuring-bind (ys zs) (break- p (cdr xs))
             (tuple (cons (car xs) ys) zs)))))
 
+
+
+;; hacky littler symbole parser example
+(defmacro keyword-parser (name &rest options)
+  (let ((dummy-data (assoc :dummy-data options)))
+    (progn (format t "pulled out dummy data: ~a" dummy-data)
+           (dolist (option options)
+             (ecase (first option)
+               ((:dummy-data))
+               ((:maybe) (print "maybe")))))))
+
+(keyword-parser :test
+                (:dummy-data '(oh my))
+                ;; this will throw an error, as its not covered by the ecase. Use case if you don't want to cover all the options
+                ;; (:documentatio n
+                ;;  "This is a string")
+                (:maybe))
+
+
+
 (defun to (type var) (coerce var type))
 
 (defmacro macro-apply (macro-name args) `(,macro-name ,@args))
