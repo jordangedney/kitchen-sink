@@ -1,4 +1,4 @@
- ;;;; kitchen-sink.lisp
+e;;;; kitchen-sink.lisp
 
 (in-package #:kitchen-sink)
 
@@ -90,6 +90,43 @@
         (reduce #'(lambda (v f) (funcall f v))
                 rest
                 :initial-value (apply fn1 args)))))
+
+
+
+(apply #'< '( 5 10  15))
+
+;; I think the type is (but I'm not certain):
+;; any :: [([a] -> bool)] -> [a] -> bool
+;; (mapcar (any #'integerp #'symbolp) '(a "a" 2 3)) => (t nil t t)
+;; (funcall (any #'< #'=) 5 10 15) => t
+(defun any (fn &rest fns)
+  (if (null fns)
+      fn
+      (let ((disjoin (apply #'any fns)))
+        #'(lambda (&rest args)
+            (or (apply fn args) (apply disjoin args))))))
+
+;; (mapcar (all #'integerp #'oddp) '(a "a" 2 3)) => (nil nil nil t)
+(defun all (fn &rest fns)
+  (if (null fns)
+      fn
+      (let ((conjoin (apply #'all fns)))
+        #'(lambda (&rest args)
+            (and (apply fn args) (apply conjoin args))))))
+
+;; (funcall (curry #'- 3) 5) => -2
+;; (funcall (curry #'+ 1) 5) => 6  == 1+
+;; (curry #'compose #'not) == complement
+(defun curry (fn &rest args)
+  #'(lambda (&rest args2)
+      (apply fn (append args args2))))
+
+;; (funcall (rcurry #'- 3) 5) => 2
+;; (rcurry #'typep 'atom) == atom
+;; ()
+(defun rcurry (fn &rest args)
+  #'(lambda (&rest args2)
+      (apply fn (append args2 args))))
 
 
 (defmacro macro-apply (macro-name args) `(,macro-name ,@args))
