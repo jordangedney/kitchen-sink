@@ -43,6 +43,28 @@ e;;;; kitchen-sink.lisp
 
 
 
+
+(defun expensive (x)
+  (sleep 2)
+  (+ x 5))
+
+;; (defmemoized frugal expensive (x))
+;; a skeleton of a poorly implemented memoization function
+;; which needs a better data structure than an alist, and gensyms
+(defmacro defmemoized (memoized-fn-name to-memoize args)
+  `(let ((already-seen nil))
+     (defun ,memoized-fn-name ,args
+       (let ((val (assoc ,@args already-seen)))
+         (if val
+             (cdr val)
+             (let ((res (,to-memoize ,@args)))
+               (progn
+                 (setf already-seen (cons (cons ,@args res) already-seen))
+                 res)))))))
+
+
+
+
 ;; hacky littler symbole parser example
 (defmacro keyword-parser (name &rest options)
   (let ((dummy-data (assoc :dummy-data options)))
